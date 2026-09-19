@@ -1,0 +1,13 @@
+# torch is installed separately from the explicit CPU index.
+numpy
+scipy
+pandas
+scikit-learn
+matplotlib
+pillow
+pytest
+hypothesis
+ruff
+fastapi
+uvicorn
+httpx

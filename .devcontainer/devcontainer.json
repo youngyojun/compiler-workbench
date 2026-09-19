@@ -1,0 +1,19 @@
+{
+  "name": "compiler-workbench",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "remoteUser": "vscode",
+  "hostRequirements": { "cpus": 4, "memory": "16gb" },
+  "postCreateCommand": "bash scripts/bootstrap_ubuntu.sh",
+  "remoteEnv": {
+    "PATH": "/home/vscode/.local/bin:/usr/lib/llvm-21/bin:${containerEnv:PATH}"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": ["llvm-vs-code-extensions.vscode-clangd", "ms-python.python"],
+      "settings": {
+        "clangd.path": "/usr/bin/clangd-21",
+        "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python"
+      }
+    }
+  }
+}
