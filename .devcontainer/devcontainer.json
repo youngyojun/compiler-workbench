@@ -3,9 +3,11 @@
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
   "remoteUser": "vscode",
   "hostRequirements": { "cpus": 4, "memory": "16gb" },
-  "postCreateCommand": "bash scripts/bootstrap_ubuntu.sh",
+  "postCreateCommand": "bash scripts/setup_codespace.sh",
+  "waitFor": "postCreateCommand",
   "remoteEnv": {
-    "PATH": "/home/vscode/.local/bin:/usr/lib/llvm-21/bin:${containerEnv:PATH}"
+    "PATH": "/home/vscode/.local/bin:/usr/lib/llvm-21/bin:${containerEnv:PATH}",
+    "UV_LINK_MODE": "copy"
   },
   "customizations": {
     "vscode": {

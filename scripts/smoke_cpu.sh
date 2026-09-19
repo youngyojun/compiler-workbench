@@ -20,7 +20,7 @@ int main() {
 }
 CPP
 clang++-21 -std=c++17 -O1 -g -fsanitize=address,undefined \
-  -fno-omit-frame-pointer "$SMOKE_DIR/hello.cpp" -o "$SMOKE_DIR/hello"
+  -fno-sanitize-recover=all -fno-omit-frame-pointer "$SMOKE_DIR/hello.cpp" -o "$SMOKE_DIR/hello"
 "$SMOKE_DIR/hello"
 mlir-opt-21 examples/mlir/mul_one.mlir --canonicalize --cse -o "$SMOKE_DIR/mul_one.mlir"
 cat "$SMOKE_DIR/mul_one.mlir"
