@@ -1,0 +1,67 @@
+# Adapted from https://github.com/github/gitignore:
+# Python.gitignore, C++.gitignore, CMake.gitignore, Global/macOS.gitignore.
+
+# macOS metadata
+.DS_Store
+._*
+__MACOSX/
+
+# Python environments and generated files
+.venv/
+.venv-gpu/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+
+# Test and tool caches
+.pytest_cache/
+.hypothesis/
+.ruff_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+.coverage
+.coverage.*
+htmlcov/
+.cache/
+.triton/
+
+# Native build artifacts
+build/
+build-*/
+cmake-build-*/
+*.o
+*.obj
+*.a
+*.so
+*.so.*
+*.dylib
+*.dll
+*.exe
+*.dSYM/
+
+# CMake-generated files; keep authored Makefiles and shared presets.
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+CMakeUserPresets.json
+
+# Local datasets and model checkpoints
+/data/
+*.pt
+*.pth
+
+# Local credentials; allow a versioned environment template.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Review machine identifiers before deliberately publishing environment evidence.
+/reports/environment.txt
+# Keep dependency locks, experiment logs, CSV/PNG results, and LLVM/MLIR fixtures.
