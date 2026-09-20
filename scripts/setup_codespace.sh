@@ -2,7 +2,7 @@
 # Complete CPU setup, also safe to rerun manually after resolving a failure.
 set -euo pipefail
 cd "$(dirname "$0")/.."
-export PATH="$HOME/.local/bin:/usr/lib/llvm-21/bin:$PATH"
+export PATH="${CARGO_HOME:-$HOME/.cargo}/bin:$HOME/.local/bin:/usr/lib/llvm-21/bin:$PATH"
 
 setup_failed() {
   local status=$?
@@ -17,8 +17,8 @@ setup_failed() {
 }
 trap setup_failed ERR
 
-for step in bootstrap_ubuntu setup_python_cpu smoke_cpu record_environment; do
+for step in bootstrap_ubuntu setup_rust setup_python_cpu smoke_cpu record_environment; do
   printf '\n==> %s\n' "$step"
   bash "scripts/$step.sh"
 done
-printf '\nREADY: CPU development environment; installation, smoke tests, and environment recording passed.\n'
+printf '\nREADY: CPU development environment; C++, Python, Rust, MLIR development checks, and environment recording passed.\n'

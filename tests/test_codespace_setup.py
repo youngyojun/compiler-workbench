@@ -1,6 +1,7 @@
 """Test setup orchestration without installing system packages or using cloud resources."""
 
 import json
+import os
 import shutil
 import subprocess
 import tempfile
@@ -9,7 +10,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-STEPS = ("bootstrap_ubuntu", "setup_python_cpu", "smoke_cpu", "record_environment")
+STEPS = ("bootstrap_ubuntu", "setup_rust", "setup_python_cpu", "smoke_cpu", "record_environment")
 
 
 class CodespaceSetupTests(unittest.TestCase):
@@ -71,6 +72,47 @@ class CodespaceSetupTests(unittest.TestCase):
                 "Python environment unavailable.",
                 (workspace / "reports/environment.txt").read_text(),
             )
+
+    def test_python_restores_recorded_versions_and_preserves_them_on_failure(self):
+        for restore, fail_freeze in [(False, False), (True, False), (True, True)]:
+            with self.subTest(restore=restore, fail_freeze=fail_freeze):
+                with tempfile.TemporaryDirectory() as directory:
+                    workspace = Path(directory)
+                    (workspace / "scripts").mkdir()
+                    shutil.copy(ROOT / "scripts/setup_python_cpu.sh", workspace / "scripts")
+                    shutil.copy(ROOT / "requirements.cpu.in", workspace)
+                    python = workspace / ".venv/bin/python"
+                    python.parent.mkdir(parents=True)
+                    python.write_text("#!/bin/sh\nexit 0\n")
+                    python.chmod(0o755)
+                    resolved = workspace / "reports/requirements.cpu.resolved.txt"
+                    resolved.parent.mkdir()
+                    versions = "torch==2.13.0+cpu\nnumpy==2.3.0\n"
+                    if restore:
+                        resolved.write_text(versions)
+                    # Replace only package operations; never download or install during this test.
+                    shell_env = workspace / "mock_uv.sh"
+                    shell_env.write_text(
+                        'uv() {\n'
+                        '  printf "%s\\n" "$*" >> uv-calls.txt\n'
+                        '  test "$UV_LINK_MODE" = copy || return 42\n'
+                        '  if [[ "$1 $2" == "pip freeze" ]]; then\n'
+                        '    printf "torch==2.13.0+cpu\\nnumpy==2.3.0\\n"\n'
+                        f'    return {23 if fail_freeze else 0}\n'
+                        '  fi\n'
+                        '}\n'
+                    )
+                    result = subprocess.run(
+                        ["bash", "scripts/setup_python_cpu.sh"], cwd=workspace,
+                        env={**os.environ, "BASH_ENV": str(shell_env)},
+                        capture_output=True, text=True,
+                    )
+                    self.assertEqual(result.returncode, 23 if fail_freeze else 0, result.stderr)
+                    calls = (workspace / "uv-calls.txt").read_text()
+                    source = "reports/requirements.cpu.resolved.txt" if restore else "requirements.cpu.in"
+                    self.assertIn(f"-r {source}", calls)
+                    self.assertNotIn("venv --python", calls)
+                    self.assertEqual(resolved.read_text(), versions)
 
 
 if __name__ == "__main__":

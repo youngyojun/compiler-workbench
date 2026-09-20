@@ -41,6 +41,9 @@ cmake-build-*/
 *.exe
 *.dSYM/
 
+# Rust build artifacts; retain Cargo.lock.
+target/
+
 # CMake-generated files; keep authored Makefiles and shared presets.
 CMakeFiles/
 CMakeCache.txt

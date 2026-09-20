@@ -12,10 +12,17 @@ fi
 .venv/bin/python -c 'import sys; assert sys.version_info[:2] == (3, 12), "Expected Python 3.12 in .venv"'
 uv pip install --python .venv/bin/python 'torch==2.13.0' \
   --index-url https://download.pytorch.org/whl/cpu
-uv pip install --python .venv/bin/python -r requirements.cpu.in
+# Retain this resolved file in Git to restore the CPU environment in a new Codespace.
+# Remove it deliberately when refreshing dependencies from requirements.cpu.in.
+RESOLVED=reports/requirements.cpu.resolved.txt
+if [[ -f "$RESOLVED" ]]; then
+  printf 'Restoring Python dependencies from %s\n' "$RESOLVED"
+  uv pip install --python .venv/bin/python -r "$RESOLVED" 'torch==2.13.0+cpu'
+else
+  printf 'Resolving Python dependencies from requirements.cpu.in\n'
+  uv pip install --python .venv/bin/python -r requirements.cpu.in
+fi
 uv pip check --python .venv/bin/python
-mkdir -p reports
-uv pip freeze --python .venv/bin/python > reports/requirements.cpu.resolved.txt
 .venv/bin/python - <<'PY'
 import torch
 assert torch.__version__.split('+')[0] == '2.13.0', 'Unexpected PyTorch version.'
@@ -25,3 +32,9 @@ x.square().sum().backward()
 assert x.grad.item() == 4.0
 print({'torch': torch.__version__, 'cuda': torch.version.cuda, 'autograd': 'passed'})
 PY
+# Publish the version record only after installation and validation succeed.
+mkdir -p reports
+RESOLVED_TMP=$(mktemp reports/.requirements.cpu.XXXXXX)
+trap 'rm -f "$RESOLVED_TMP"' EXIT
+uv pip freeze --python .venv/bin/python > "$RESOLVED_TMP"
+mv "$RESOLVED_TMP" "$RESOLVED"
